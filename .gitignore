@@ -1,6 +1,17 @@
-/target
+# Gradle
+/build/
+.gradle/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Kotlin/Native
+*.kexe
+*.klib
+
+# Rust (legacy, will be removed)
+/target/
 **/*.rs.bk
 Cargo.lock
-PUSHING_PROCEDURE.md
-modoc.config
-.vscode

@@ -1,98 +1,141 @@
-[![Build Status](https://travis-ci.com/kurtlawrence/cansi.svg?branch=master)](https://travis-ci.com/kurtlawrence/cansi)
-[![Latest Version](https://img.shields.io/crates/v/cansi.svg)](https://crates.io/crates/cansi)
-[![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/cansi)
-[![codecov](https://codecov.io/gh/kurtlawrence/cansi/branch/master/graph/badge.svg)](https://codecov.io/gh/kurtlawrence/cansi)
+# cansi-kotlin
 
-# **C**atergorise **ANSI** - ANSI escape code parser and categoriser
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0+-blue.svg?logo=kotlin)](https://kotlinlang.org)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](#license)
+[![GitHub](https://img.shields.io/badge/github-KotlinMania%2Fcansi--kotlin-blue?logo=github)](https://github.com/KotlinMania/cansi-kotlin)
 
-See the [rs docs.](https://docs.rs/cansi/)
-Look at progress and contribute on [github.](https://github.com/kurtlawrence/cansi)
+A **Kotlin Multiplatform Native** library for parsing and categorising ANSI escape codes.
+This is a port of the Rust [cansi](https://github.com/kurtlawrence/cansi) crate.
 
-`cansi` will parse text with ANSI escape sequences in it and return a deconstructed 
-text with metadata around the colouring and styling. `cansi` is only concerned 
-with `CSI` sequences, particuarly the `SGR` parameters. `cansi` will not construct
-escaped text, there are crates such as [`colored`](https://crates.io/crates/colored)
-that do a great job of colouring and styling text.
+## Overview
 
-# Example usage
+**C**ategorise **ANSI** - ANSI escape code parser and categoriser
 
-> This example was done using the `colored` crate to help with constructing the escaped 
-> text string. It will work with other tools that inject escape sequences into text strings (given they follow [ANSI specification](https://en.wikipedia.org/wiki/ANSI_escape_code)).
+`cansi-kotlin` parses text with ANSI escape sequences and returns deconstructed text with
+metadata about coloring and styling. The library focuses on CSI (Control Sequence Introducer)
+sequences, particularly SGR (Select Graphic Rendition) parameters.
 
-```rust
-extern crate cansi;
-extern crate colored;
+## Supported Platforms
 
-use cansi::*;
-use colored::Colorize;
-use std::io::Write;
+- macOS (arm64, x64)
+- Linux (x64)
+- Windows (x64 via MinGW)
 
-let v = &mut Vec::new();
-write!(
-  v,
-  "Hello, {}{}{}{}{}{}",
-  "w".white().on_red(),
-  "o".cyan().on_green(),
-  "r".magenta().on_yellow(),
-  "l".blue().on_white(),
-  "d".yellow().on_bright_cyan(),
-  "!".bright_red().on_bright_yellow(),
-)
-.unwrap();
+## Installation
 
-let text = String::from_utf8_lossy(&v);
-let result = categorise_text(&text); // cansi function
+### As a Git Submodule (Recommended)
 
-assert_eq!(result.len(), 7); // there should be seven differently styled components
+This library is not yet published to Maven Central. The recommended approach is to include it as a
+git submodule or vendored dependency:
 
-assert_eq!("Hello, world!", &construct_text_no_codes(&result));
-
-// 'Hello, ' is just defaults
-assert_eq!(
-  result[0],
-  CategorisedSlice {
-    text: "Hello, ",
-    start: 0,
-    end: 7,
-    fg_colour: Color::White,
-    bg_colour: Color::Black,
-    intensity: Intensity::Normal,
-    italic: false,
-    underline: false,
-    blink: false,
-    reversed: false,
-    hidden: false,
-    strikethrough: false
-  }
-);
-
-// 'w' is coloured differently
-assert_eq!(
-  result[1],
-  CategorisedSlice {
-    text: "w",
-    start: 15,
-    end: 16,
-    fg_colour: Color::White,
-    bg_colour: Color::Red,
-    intensity: Intensity::Normal,
-    italic: false,
-    underline: false,
-    blink: false,
-    reversed: false,
-    hidden: false,
-    strikethrough: false
-  }
-);
+```bash
+git submodule add https://github.com/KotlinMania/cansi-kotlin.git
 ```
 
-## Targeting no_std
-This crate can use `alloc` in place of the standard library for no_std targets.
-The standard library is enabled by default, so disabling default features and enabling the
-`alloc` feature is required to use the crate this way.
+Then in your `settings.gradle.kts`:
 
-```toml
-[dependencies]
-cansi = { version = "2.1.0", default-features = false, features = ["alloc"] }
+```kotlin
+include(":cansi-kotlin")
 ```
 
+And in your module's `build.gradle.kts`:
+
+```kotlin
+kotlin {
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":cansi-kotlin"))
+            }
+        }
+    }
+}
+```
+
+## Quick Start
+
+```kotlin
+import cansi.*
+
+// Parse text with ANSI escape sequences
+val text = "\u001b[31mHello\u001b[0m, \u001b[32mWorld\u001b[0m!"
+val slices = categoriseText(text)
+
+// Each slice contains the text and its styling
+for (slice in slices) {
+    println("Text: '${slice.text}', Color: ${slice.fg}")
+}
+// Output:
+// Text: 'Hello', Color: Red
+// Text: ', ', Color: null
+// Text: 'World', Color: Green
+// Text: '!', Color: null
+
+// Reconstruct the plain text without escape codes
+val plainText = constructTextNoCodes(slices)
+println(plainText) // "Hello, World!"
+```
+
+## API
+
+### Core Functions
+
+- `parse(text)` - Find all ANSI escape sequences and return their positions
+- `categoriseText(text)` - Parse text and return styled slices with color/formatting info
+- `constructTextNoCodes(slices)` - Reconstruct plain text from categorized slices
+- `lineIter(slices)` - Iterate over slices line by line
+
+### Data Types
+
+- `CategorisedSlice` - A text slice with styling information (colors, bold, italic, etc.)
+- `Color` - The 16 standard ANSI colors (8 normal + 8 bright variants)
+- `Intensity` - Text intensity (Normal, Bold, Faint)
+- `Match` - An ANSI escape sequence match with byte positions
+
+### Supported SGR Parameters
+
+- **Colors**: All 16 standard colors (foreground 30-37, 90-97; background 40-47, 100-107)
+- **Intensity**: Bold (1), Faint (2), Normal (22)
+- **Styles**: Italic (3), Underline (4), Blink (5), Reversed (7), Hidden (8), Strikethrough (9)
+- **Reset**: Code 0 resets all attributes
+
+## Example: Styled Text Analysis
+
+```kotlin
+import cansi.*
+
+val styledText = "\u001b[1;31;4mError:\u001b[0m Something went wrong"
+val slices = categoriseText(styledText)
+
+// First slice: "Error:" with bold, red, underline
+val errorSlice = slices[0]
+println("Text: ${errorSlice.text}")           // "Error:"
+println("Bold: ${errorSlice.intensity}")      // Bold
+println("Color: ${errorSlice.fg}")            // Red
+println("Underline: ${errorSlice.underline}") // true
+
+// Second slice: " Something went wrong" with default styling
+val msgSlice = slices[1]
+println("Text: ${msgSlice.text}")             // " Something went wrong"
+println("Color: ${msgSlice.fg}")              // null (default)
+```
+
+## License
+
+Licensed under either of:
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](./LICENSE-APACHE))
+- MIT license ([LICENSE-MIT](./LICENSE-MIT))
+
+at your option.
+
+---
+
+## Acknowledgments
+
+This Kotlin Multiplatform port was created by **Sydney Renee** of [The Solace Project](mailto:sydney@solace.ofharmony.ai)
+for [KotlinMania](https://github.com/KotlinMania).
+
+Special thanks to the original author:
+
+- [Kurt Lawrence](https://github.com/kurtlawrence) for the original [cansi](https://github.com/kurtlawrence/cansi) Rust implementation
