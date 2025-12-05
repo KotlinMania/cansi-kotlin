@@ -1,4 +1,4 @@
-package cansi
+package ai.solace.tui.cansi
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -7,7 +7,7 @@
  * text with metadata around coloring and styling. It focuses on CSI sequences,
  * particularly SGR (Select Graphic Rendition) parameters.
  */
-package cansi
+package ai.solace.tui.cansi
 
 /**
  * The 16 standard ANSI colors (8 normal + 8 bright).

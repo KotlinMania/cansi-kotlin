@@ -2,7 +2,7 @@ plugins {
     kotlin("multiplatform") version "2.2.10"
 }
 
-group = "io.github.kotlinmania"
+group = "ai.solace.tui"
 version = "0.1.0-SNAPSHOT"
 
 repositories {
@@ -19,11 +19,8 @@ kotlin {
     mingwX64()
 
     sourceSets {
-        val commonMain by getting {
-            kotlin.srcDir("commonMain/src")
-        }
+        val commonMain by getting
         val commonTest by getting {
-            kotlin.srcDir("commonTest/kotlin")
             dependencies {
                 implementation(kotlin("test"))
             }
