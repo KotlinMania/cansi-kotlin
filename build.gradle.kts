@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "io.github.kotlinmania"
-version = "0.1.0"
+version = "0.1.1"
 
 // Setup Android SDK location and licenses automatically
 val sdkDir = file(".android-sdk")
