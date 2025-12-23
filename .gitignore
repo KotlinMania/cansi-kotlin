@@ -5,13 +5,15 @@
 # IDE
 .idea/
 *.iml
-.vscode/
+
+# Environment
+.direnv
+.envrc
 
 # Kotlin/Native
 *.kexe
 *.klib
 
-# Rust (legacy, will be removed)
-/target/
-**/*.rs.bk
-Cargo.lock
+# Android SDK
+/.android-sdk/
+local.properties

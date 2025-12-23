@@ -8,8 +8,28 @@ on:
 
 jobs:
   build-macos:
-    name: Build and Test (macOS)
+    name: Build and Test (macOS / iOS)
     runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build and test
+        run: ./gradlew allTests assembleCansiXCFramework --no-configuration-cache
+
+  build-linux:
+    name: Build and Test (Linux / Android / JS / WASM)
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -27,9 +47,9 @@ jobs:
       - name: Build and test
         run: ./gradlew allTests --no-configuration-cache
 
-  build-linux:
-    name: Build and Test (Linux)
-    runs-on: ubuntu-latest
+  build-windows:
+    name: Build and Test (Windows)
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -45,4 +65,4 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build and test
-        run: ./gradlew linuxX64Test --no-configuration-cache
+        run: ./gradlew mingwX64Test --no-configuration-cache
