@@ -104,12 +104,6 @@ data class CategorisedSlice(
     }
 }
 
-/** Type alias for a list of categorized slices. */
-typealias CategorisedSlices = List<CategorisedSlice>
-
-/** Type alias for a single line of categorized slices. */
-typealias CategorisedLine = List<CategorisedSlice>
-
 // CSI bytes: ESC (0x1b) followed by '[' (0x5b)
 private val CSI_BYTES = byteArrayOf(0x1b, 0x5b)
 
@@ -311,7 +305,7 @@ private fun Sgr.toSlice(text: String, start: Int, end: Int): CategorisedSlice =
  * @param text The text containing ANSI escape sequences to parse.
  * @return A list of categorized slices with styling information.
  */
-fun categoriseText(text: String): CategorisedSlices {
+fun categoriseText(text: String): List<CategorisedSlice> {
     val matches = parse(text)
     val bytes = text.encodeToByteArray()
 
@@ -353,7 +347,7 @@ fun categoriseText(text: String): CategorisedSlices {
  * @param slices The categorized slices to reconstruct.
  * @return The plain text without ANSI escape codes.
  */
-fun constructTextNoCodes(slices: CategorisedSlices): String =
+fun constructTextNoCodes(slices: List<CategorisedSlice>): String =
     buildString(slices.sumOf { it.text.length }) {
         for (slice in slices) {
             append(slice.text)
@@ -405,17 +399,17 @@ private fun splitOnNewLine(txt: String): Pair<Int, Int?> {
  * @param slices The categorized slices to iterate over by line.
  * @return An iterator that yields lines of categorized slices.
  */
-fun lineIter(slices: CategorisedSlices): CategorisedLineIterator =
+fun lineIter(slices: List<CategorisedSlice>): CategorisedLineIterator =
     CategorisedLineIterator(slices)
 
 /**
- * An iterator structure for [CategorisedSlices], iterating over each new line
+ * An iterator structure for `List<CategorisedSlice>`, iterating over each new line
  * (`\n` or `\r\n`) and returning the categorized slices within those.
  * [CategorisedSlice]s that include a new line are split with the same style.
  */
 class CategorisedLineIterator(
-    private val slices: CategorisedSlices
-) : Iterator<CategorisedLine> {
+    private val slices: List<CategorisedSlice>
+) : Iterator<List<CategorisedSlice>> {
     private var idx = 0
     private var prev: CategorisedSlice? = null
     private var hasMoreLines = true
@@ -426,7 +420,7 @@ class CategorisedLineIterator(
         return prev != null || idx < slices.size
     }
 
-    override fun next(): CategorisedLine {
+    override fun next(): List<CategorisedSlice> {
         if (!hasNext()) throw NoSuchElementException()
 
         val v = mutableListOf<CategorisedSlice>()
@@ -497,5 +491,5 @@ class CategorisedLineIterator(
 /**
  * Extension function to convert the iterator to a sequence for easier use.
  */
-fun CategorisedLineIterator.asSequence(): Sequence<CategorisedLine> =
+fun CategorisedLineIterator.asSequence(): Sequence<List<CategorisedSlice>> =
     generateSequence { if (hasNext()) next() else null }
