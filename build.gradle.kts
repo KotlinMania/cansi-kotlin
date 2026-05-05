@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
@@ -40,6 +41,12 @@ kotlin {
             xcf.add(this)
         }
     }
+    macosX64 {
+        binaries.framework {
+            baseName = "Cansi"
+            xcf.add(this)
+        }
+    }
     linuxX64()
     mingwX64()
     iosArm64 {
@@ -70,6 +77,11 @@ kotlin {
         nodejs()
     }
 
+    swiftExport {
+        moduleName = "Cansi"
+        flattenPackage = "io.github.kotlinmania.cansi"
+    }
+
     sourceSets {
         val commonMain by getting
         val commonTest by getting {
@@ -80,6 +92,12 @@ kotlin {
     }
 
     jvmToolchain(21)
+}
+
+rootProject.extensions.configure<YarnRootExtension>("kotlinYarn") {
+    resolution("diff", "8.0.3")
+    resolution("serialize-javascript", "7.0.5")
+    resolution("webpack", "5.106.2")
 }
 
 kotlin {
