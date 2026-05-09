@@ -1,12 +1,17 @@
-import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootEnvSpec
+import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec
+import org.jetbrains.kotlin.gradle.targets.wasm.yarn.WasmYarnRootEnvSpec
 
 plugins {
-    kotlin("multiplatform") version "2.3.20"
+    kotlin("multiplatform") version "2.3.21"
     id("com.android.kotlin.multiplatform.library") version "9.2.0"
-    id("com.vanniktech.maven.publish") version "0.30.0"
+    id("com.vanniktech.maven.publish") version "0.36.0"
 }
 
 group = "io.github.kotlinmania"
@@ -41,21 +46,9 @@ kotlin {
             xcf.add(this)
         }
     }
-    macosX64 {
-        binaries.framework {
-            baseName = "Cansi"
-            xcf.add(this)
-        }
-    }
     linuxX64()
     mingwX64()
     iosArm64 {
-        binaries.framework {
-            baseName = "Cansi"
-            xcf.add(this)
-        }
-    }
-    iosX64 {
         binaries.framework {
             baseName = "Cansi"
             xcf.add(this)
@@ -77,6 +70,11 @@ kotlin {
         nodejs()
     }
 
+    swiftExport {
+        moduleName = "Cansi"
+        flattenPackage = "io.github.kotlinmania.cansi"
+    }
+
     sourceSets {
         val commonMain by getting
         val commonTest by getting {
@@ -87,6 +85,62 @@ kotlin {
     }
 
     jvmToolchain(21)
+}
+
+rootProject.extensions.configure<NodeJsEnvSpec>("kotlinNodeJsSpec") {
+    version.set("22.22.2")
+}
+
+rootProject.extensions.configure<WasmNodeJsEnvSpec>("kotlinWasmNodeJsSpec") {
+    version.set("22.22.2")
+}
+
+rootProject.extensions.configure<YarnRootEnvSpec>("kotlinYarnSpec") {
+    version.set("1.22.22")
+}
+
+rootProject.extensions.configure<WasmYarnRootEnvSpec>("kotlinWasmYarnSpec") {
+    version.set("1.22.22")
+}
+
+rootProject.extensions.configure<YarnRootExtension>("kotlinYarn") {
+    resolution("diff", "8.0.3")
+    resolution("serialize-javascript", "7.0.5")
+    resolution("webpack", "5.106.2")
+
+    resolution("**/diff", "8.0.3")
+    resolution("**/serialize-javascript", "7.0.5")
+    resolution("**/webpack", "5.106.2")
+    resolution("follow-redirects", "1.16.0")
+    resolution("**/follow-redirects", "1.16.0")
+    resolution("lodash", "4.18.1")
+    resolution("**/lodash", "4.18.1")
+    resolution("ajv", "8.20.0")
+    resolution("**/ajv", "8.20.0")
+    resolution("brace-expansion", "5.0.5")
+    resolution("**/brace-expansion", "5.0.5")
+    resolution("flatted", "3.4.2")
+    resolution("**/flatted", "3.4.2")
+    resolution("minimatch", "10.2.5")
+    resolution("**/minimatch", "10.2.5")
+    resolution("picomatch", "4.0.4")
+    resolution("**/picomatch", "4.0.4")
+    resolution("qs", "6.15.1")
+    resolution("**/qs", "6.15.1")
+    resolution("socket.io-parser", "4.2.6")
+    resolution("**/socket.io-parser", "4.2.6")
+}
+
+
+val patchedKarmaWebpackPackage = rootProject.layout.projectDirectory.dir("gradle/npm/karma-webpack").asFile.absolutePath.replace("\\", "/")
+
+rootProject.extensions.configure<NodeJsRootExtension>("kotlinNodeJs") {
+    versions.webpack.version = "5.106.2"
+    versions.webpackCli.version = "7.0.2"
+    versions.karma.version = "npm:karma-maintained@6.4.7"
+    versions.karmaWebpack.version = "file:$patchedKarmaWebpackPackage"
+    versions.mocha.version = "12.0.0-beta-10"
+    versions.kotlinWebHelpers.version = "3.1.0"
 }
 
 kotlin {
@@ -105,13 +159,13 @@ val enableIosSimulatorTests =
     providers.gradleProperty("enableIosSimulatorTests").map { it.toBoolean() }.orElse(false)
 
 tasks.withType<KotlinNativeTest>().configureEach {
-    if (!enableIosSimulatorTests.get() && (name == "iosX64Test" || name == "iosSimulatorArm64Test")) {
+    if (!enableIosSimulatorTests.get() && name == "iosSimulatorArm64Test") {
         enabled = false
     }
 }
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
     signAllPublications()
 
     coordinates(group.toString(), "cansi-kotlin", version.toString())
