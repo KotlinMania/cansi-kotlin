@@ -4,6 +4,12 @@ on:
   release:
     types: [released]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish and release to Maven Central (requires secrets)"
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   publish:
@@ -40,14 +46,15 @@ jobs:
           npm --version
           yarn --version
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install system dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+      - name: Build (dry run)
+        if: ${{ github.event_name == 'workflow_dispatch' && !inputs.publish }}
+        # Keep workflow_dispatch safe (no publishing), and keep runtime low by focusing on JVM/Android output.
+        env:
+          ORG_GRADLE_PROJECT_kotlin_js_yarn_download: "false"
+        run: ./gradlew compileAndroidMain androidSourcesJar --no-configuration-cache
 
       - name: Publish to Maven Central
+        if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish) }}
         run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_kotlin_js_yarn_download: "false"
