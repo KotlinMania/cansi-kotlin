@@ -22,18 +22,6 @@ plugins {
 group = "io.github.kotlinmania"
 version = "0.1.4"
 
-val androidSdkDir: String? =
-    providers.environmentVariable("ANDROID_SDK_ROOT").orNull
-        ?: providers.environmentVariable("ANDROID_HOME").orNull
-
-if (androidSdkDir != null && file(androidSdkDir).exists()) {
-    val localProperties = rootProject.file("local.properties")
-    if (!localProperties.exists()) {
-        val sdkDirPropertyValue = file(androidSdkDir).absolutePath.replace("\\", "/")
-        localProperties.writeText("sdk.dir=$sdkDirPropertyValue")
-    }
-}
-
 kotlin {
     applyDefaultHierarchyTemplate()
 
@@ -319,12 +307,6 @@ val codeqlCompileJvm = tasks.register<JavaExec>("codeqlCompileJvm") {
             "-opt-in", "kotlin.concurrent.atomics.ExperimentalAtomicApi",
         ) + sourceFiles.map { it.absolutePath }
     }
-}
-
-tasks.register<Exec>("setupAndroidSdk") {
-    group = "setup"
-    description = "Downloads and configures the project-local Android SDK."
-    commandLine("./setup-android-sdk.sh")
 }
 
 tasks.register("test") {
