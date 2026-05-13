@@ -31,6 +31,6 @@ jobs:
           compileKotlinIosArm64
           compileKotlinIosSimulatorArm64
           iosSimulatorArm64Test
-          assembleMimeXCFramework
+          assembleCansiXCFramework
           -PenableIosSimulatorTests=true
           --no-configuration-cache
