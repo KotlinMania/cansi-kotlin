@@ -180,8 +180,8 @@ rootProject.extensions.configure<WasmYarnRootEnvSpec>("kotlinWasmYarnSpec") {
 rootProject.extensions.configure<YarnRootExtension>("kotlinYarn") {
     resolution("diff", "8.0.3")
     resolution("**/diff", "8.0.3")
-    resolution("fast-uri", "3.1.1")
-    resolution("**/fast-uri", "3.1.1")
+    resolution("fast-uri", "3.1.2")
+    resolution("**/fast-uri", "3.1.2")
     resolution("serialize-javascript", "7.0.5")
     resolution("**/serialize-javascript", "7.0.5")
     resolution("webpack", "5.106.2")
