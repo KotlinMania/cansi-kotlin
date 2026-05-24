@@ -354,32 +354,42 @@ fun constructTextNoCodes(slices: List<CategorisedSlice>): String =
         }
     }
 
+private data class NewLineSplit(
+    val firstText: String,
+    val firstByteLength: Int,
+    val remainderText: String?,
+    val remainderByteStart: Int
+)
+
 /**
- * Splits on the first instance of `\r\n` or `\n` bytes.
- * Returns the exclusive end of the first component, and the inclusive start
- * of the remaining items if there is a split.
- *
- * Can return an empty remainder (if terminated with a new line).
- * Can return empty first slice (e.g., "\nHello").
+ * Splits on the first instance of `\r\n` or `\n`.
+ * The returned offsets are UTF-8 byte counts within [txt].
  */
-private fun splitOnNewLine(txt: String): Pair<Int, Int?> {
-    val cr = txt.indexOf('\r')
+private fun splitOnNewLine(txt: String): NewLineSplit {
     val nl = txt.indexOf('\n')
 
-    return when {
-        cr == -1 && nl == -1 -> txt.length to null
-        cr != -1 && nl == -1 -> txt.length to null // Special case: CR but no NL
-        cr == -1 && nl != -1 -> nl to (nl + 1)
-        else -> {
-            // Both CR and NL present
-            if (nl > 0 && nl - 1 == cr) {
-                // CRLF sequence
-                cr to (nl + 1)
-            } else {
-                nl to (nl + 1)
-            }
-        }
+    if (nl == -1) {
+        return NewLineSplit(
+            firstText = txt,
+            firstByteLength = txt.encodeToByteArray().size,
+            remainderText = null,
+            remainderByteStart = -1
+        )
     }
+
+    val firstCharEnd = if (nl > 0 && txt[nl - 1] == '\r') nl - 1 else nl
+    val remainderCharStart = nl + 1
+    val firstText = txt.substring(0, firstCharEnd)
+    val remainderText = txt.substring(remainderCharStart)
+    val firstByteLength = txt.substring(0, firstCharEnd).encodeToByteArray().size
+    val remainderByteStart = txt.substring(0, remainderCharStart).encodeToByteArray().size
+
+    return NewLineSplit(
+        firstText = firstText,
+        firstByteLength = firstByteLength,
+        remainderText = remainderText,
+        remainderByteStart = remainderByteStart
+    )
 }
 
 /**
@@ -427,21 +437,21 @@ class CategorisedLineIterator(
 
         prev?.let { prevSlice ->
             // Need to test splitting this, might be more new lines in remainder
-            val (first, remainder) = splitOnNewLine(prevSlice.text)
+            val split = splitOnNewLine(prevSlice.text)
 
             // Push first slice on -- only if not empty
             // If first == 0 it is because there is a sequence of new lines
             v.add(prevSlice.cloneStyle(
-                prevSlice.text.substring(0, first),
+                split.firstText,
                 prevSlice.start,
-                prevSlice.start + first
+                prevSlice.start + split.firstByteLength
             ))
 
-            if (remainder != null) {
+            if (split.remainderText != null) {
                 // There is a remainder, which means a new line was hit
                 prev = prevSlice.cloneStyle(
-                    prevSlice.text.substring(remainder),
-                    prevSlice.start + remainder,
+                    split.remainderText,
+                    prevSlice.start + split.remainderByteStart,
                     prevSlice.end
                 )
                 return v // Exit early
@@ -454,24 +464,24 @@ class CategorisedLineIterator(
             val slice = slices[idx]
             idx++ // Increment to next slice
 
-            val (first, remainder) = splitOnNewLine(slice.text)
+            val split = splitOnNewLine(slice.text)
 
             // Push first slice on -- only if not empty
-            if (first > 0 || v.isEmpty()) {
+            if (split.firstByteLength > 0 || v.isEmpty()) {
                 v.add(slice.cloneStyle(
-                    slice.text.substring(0, first),
+                    split.firstText,
                     slice.start,
-                    slice.start + first
+                    slice.start + split.firstByteLength
                 ))
             }
 
-            if (remainder != null) {
+            if (split.remainderText != null) {
                 // There is a remainder, which means a new line was hit
-                if (slice.text.substring(remainder).isNotEmpty()) {
+                if (split.remainderText.isNotEmpty()) {
                     // Not just a trailing new line
                     prev = slice.cloneStyle(
-                        slice.text.substring(remainder),
-                        slice.start + remainder,
+                        split.remainderText,
+                        slice.start + split.remainderByteStart,
                         slice.end
                     )
                 }

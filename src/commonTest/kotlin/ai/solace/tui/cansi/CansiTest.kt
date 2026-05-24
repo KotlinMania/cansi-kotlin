@@ -363,6 +363,32 @@ class CansiTest {
     }
 
     @Test
+    fun lineIterUsesUtf8ByteOffsets() {
+        val lines = lineIter(categoriseText("é\nx")).asSequence().toList()
+
+        assertEquals(2, lines.size)
+        assertEquals("é", lines[0][0].text)
+        assertEquals(0, lines[0][0].start)
+        assertEquals(2, lines[0][0].end)
+        assertEquals("x", lines[1][0].text)
+        assertEquals(3, lines[1][0].start)
+        assertEquals(4, lines[1][0].end)
+    }
+
+    @Test
+    fun lineIterUsesUtf8ByteOffsetsWithCrLf() {
+        val lines = lineIter(categoriseText("é\r\nx")).asSequence().toList()
+
+        assertEquals(2, lines.size)
+        assertEquals("é", lines[0][0].text)
+        assertEquals(0, lines[0][0].start)
+        assertEquals(2, lines[0][0].end)
+        assertEquals("x", lines[1][0].text)
+        assertEquals(4, lines[1][0].start)
+        assertEquals(5, lines[1][0].end)
+    }
+
+    @Test
     fun lineIterNewlineStartsWithEscape() {
         // Simulating "hello\n" followed by green "world"
         val text = "hello\n\u001b[32mworld\u001b[0m"
