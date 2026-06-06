@@ -1,5 +1,5 @@
 version = 1
-name = "proc-macro-kotlin"
+name = "cansi-kotlin"
 
 [setup]
 script = '''
