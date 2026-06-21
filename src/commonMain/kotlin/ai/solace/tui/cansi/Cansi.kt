@@ -28,7 +28,7 @@ enum class Color {
     BrightBlue,
     BrightMagenta,
     BrightCyan,
-    BrightWhite
+    BrightWhite,
 }
 
 /**
@@ -37,10 +37,12 @@ enum class Color {
 enum class Intensity {
     /** Normal intensity (no emphasis). */
     Normal,
+
     /** Bold. */
     Bold,
+
     /** Faint. */
-    Faint
+    Faint,
 }
 
 /**
@@ -53,7 +55,7 @@ enum class Intensity {
 data class Match(
     val start: Int,
     val end: Int,
-    val text: String
+    val text: String,
 )
 
 /**
@@ -87,7 +89,7 @@ data class CategorisedSlice(
     val blink: Boolean? = null,
     val reversed: Boolean? = null,
     val hidden: Boolean? = null,
-    val strikethrough: Boolean? = null
+    val strikethrough: Boolean? = null,
 ) {
     /**
      * Creates a new slice with the same style but different text and positions.
@@ -157,8 +159,8 @@ fun parse(text: String): List<Match> {
                 Match(
                     start = start,
                     end = finalEnd,
-                    text = bytes.sliceArray(start until finalEnd).decodeToString()
-                )
+                    text = bytes.sliceArray(start until finalEnd).decodeToString(),
+                ),
             )
 
             start = finalEnd
@@ -191,7 +193,7 @@ private data class Sgr(
     var blink: Boolean? = null,
     var reversed: Boolean? = null,
     var hidden: Boolean? = null,
-    var strikethrough: Boolean? = null
+    var strikethrough: Boolean? = null,
 )
 
 private const val SEPARATOR = ';'
@@ -283,7 +285,7 @@ private fun Sgr.toSlice(text: String, start: Int, end: Int): CategorisedSlice =
         blink = blink,
         reversed = reversed,
         hidden = hidden,
-        strikethrough = strikethrough
+        strikethrough = strikethrough,
     )
 
 /**
@@ -358,7 +360,7 @@ private data class NewLineSplit(
     val firstText: String,
     val firstByteLength: Int,
     val remainderText: String?,
-    val remainderByteStart: Int
+    val remainderByteStart: Int,
 )
 
 /**
@@ -373,7 +375,7 @@ private fun splitOnNewLine(txt: String): NewLineSplit {
             firstText = txt,
             firstByteLength = txt.encodeToByteArray().size,
             remainderText = null,
-            remainderByteStart = -1
+            remainderByteStart = -1,
         )
     }
 
@@ -388,7 +390,7 @@ private fun splitOnNewLine(txt: String): NewLineSplit {
         firstText = firstText,
         firstByteLength = firstByteLength,
         remainderText = remainderText,
-        remainderByteStart = remainderByteStart
+        remainderByteStart = remainderByteStart,
     )
 }
 
@@ -418,7 +420,7 @@ fun lineIter(slices: List<CategorisedSlice>): CategorisedLineIterator =
  * [CategorisedSlice]s that include a new line are split with the same style.
  */
 class CategorisedLineIterator(
-    private val slices: List<CategorisedSlice>
+    private val slices: List<CategorisedSlice>,
 ) : Iterator<List<CategorisedSlice>> {
     private var idx = 0
     private var prev: CategorisedSlice? = null
@@ -441,19 +443,22 @@ class CategorisedLineIterator(
 
             // Push first slice on -- only if not empty
             // If first == 0 it is because there is a sequence of new lines
-            v.add(prevSlice.cloneStyle(
-                split.firstText,
-                prevSlice.start,
-                prevSlice.start + split.firstByteLength
-            ))
+            v.add(
+                prevSlice.cloneStyle(
+                    split.firstText,
+                    prevSlice.start,
+                    prevSlice.start + split.firstByteLength,
+                ),
+            )
 
             if (split.remainderText != null) {
                 // There is a remainder, which means a new line was hit
-                prev = prevSlice.cloneStyle(
-                    split.remainderText,
-                    prevSlice.start + split.remainderByteStart,
-                    prevSlice.end
-                )
+                prev =
+                    prevSlice.cloneStyle(
+                        split.remainderText,
+                        prevSlice.start + split.remainderByteStart,
+                        prevSlice.end,
+                    )
                 return v // Exit early
             }
 
@@ -468,22 +473,25 @@ class CategorisedLineIterator(
 
             // Push first slice on -- only if not empty
             if (split.firstByteLength > 0 || v.isEmpty()) {
-                v.add(slice.cloneStyle(
-                    split.firstText,
-                    slice.start,
-                    slice.start + split.firstByteLength
-                ))
+                v.add(
+                    slice.cloneStyle(
+                        split.firstText,
+                        slice.start,
+                        slice.start + split.firstByteLength,
+                    ),
+                )
             }
 
             if (split.remainderText != null) {
                 // There is a remainder, which means a new line was hit
                 if (split.remainderText.isNotEmpty()) {
                     // Not just a trailing new line
-                    prev = slice.cloneStyle(
-                        split.remainderText,
-                        slice.start + split.remainderByteStart,
-                        slice.end
-                    )
+                    prev =
+                        slice.cloneStyle(
+                            split.remainderText,
+                            slice.start + split.remainderByteStart,
+                            slice.end,
+                        )
                 }
                 break // Exit looping
             }

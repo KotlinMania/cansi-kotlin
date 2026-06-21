@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class CansiTest {
-
     // ========== Parsing Tests ==========
 
     @Test
@@ -155,16 +154,17 @@ class CansiTest {
     @Test
     fun categoriseForegroundColors() {
         // Test all basic foreground colors (30-37)
-        val colors = listOf(
-            "30" to Color.Black,
-            "31" to Color.Red,
-            "32" to Color.Green,
-            "33" to Color.Yellow,
-            "34" to Color.Blue,
-            "35" to Color.Magenta,
-            "36" to Color.Cyan,
-            "37" to Color.White
-        )
+        val colors =
+            listOf(
+                "30" to Color.Black,
+                "31" to Color.Red,
+                "32" to Color.Green,
+                "33" to Color.Yellow,
+                "34" to Color.Blue,
+                "35" to Color.Magenta,
+                "36" to Color.Cyan,
+                "37" to Color.White,
+            )
 
         for ((code, expectedColor) in colors) {
             val text = "\u001b[${code}mtest"
@@ -176,16 +176,17 @@ class CansiTest {
     @Test
     fun categoriseBackgroundColors() {
         // Test all basic background colors (40-47)
-        val colors = listOf(
-            "40" to Color.Black,
-            "41" to Color.Red,
-            "42" to Color.Green,
-            "43" to Color.Yellow,
-            "44" to Color.Blue,
-            "45" to Color.Magenta,
-            "46" to Color.Cyan,
-            "47" to Color.White
-        )
+        val colors =
+            listOf(
+                "40" to Color.Black,
+                "41" to Color.Red,
+                "42" to Color.Green,
+                "43" to Color.Yellow,
+                "44" to Color.Blue,
+                "45" to Color.Magenta,
+                "46" to Color.Cyan,
+                "47" to Color.White,
+            )
 
         for ((code, expectedColor) in colors) {
             val text = "\u001b[${code}mtest"
@@ -197,16 +198,17 @@ class CansiTest {
     @Test
     fun categoriseBrightForegroundColors() {
         // Test bright foreground colors (90-97)
-        val colors = listOf(
-            "90" to Color.BrightBlack,
-            "91" to Color.BrightRed,
-            "92" to Color.BrightGreen,
-            "93" to Color.BrightYellow,
-            "94" to Color.BrightBlue,
-            "95" to Color.BrightMagenta,
-            "96" to Color.BrightCyan,
-            "97" to Color.BrightWhite
-        )
+        val colors =
+            listOf(
+                "90" to Color.BrightBlack,
+                "91" to Color.BrightRed,
+                "92" to Color.BrightGreen,
+                "93" to Color.BrightYellow,
+                "94" to Color.BrightBlue,
+                "95" to Color.BrightMagenta,
+                "96" to Color.BrightCyan,
+                "97" to Color.BrightWhite,
+            )
 
         for ((code, expectedColor) in colors) {
             val text = "\u001b[${code}mtest"
@@ -218,16 +220,17 @@ class CansiTest {
     @Test
     fun categoriseBrightBackgroundColors() {
         // Test bright background colors (100-107)
-        val colors = listOf(
-            "100" to Color.BrightBlack,
-            "101" to Color.BrightRed,
-            "102" to Color.BrightGreen,
-            "103" to Color.BrightYellow,
-            "104" to Color.BrightBlue,
-            "105" to Color.BrightMagenta,
-            "106" to Color.BrightCyan,
-            "107" to Color.BrightWhite
-        )
+        val colors =
+            listOf(
+                "100" to Color.BrightBlack,
+                "101" to Color.BrightRed,
+                "102" to Color.BrightGreen,
+                "103" to Color.BrightYellow,
+                "104" to Color.BrightBlue,
+                "105" to Color.BrightMagenta,
+                "106" to Color.BrightCyan,
+                "107" to Color.BrightWhite,
+            )
 
         for ((code, expectedColor) in colors) {
             val text = "\u001b[${code}mtest"
@@ -405,14 +408,15 @@ class CansiTest {
 
     @Test
     fun cloneStyleTest() {
-        val original = CategorisedSlice(
-            text = "hello",
-            start = 0,
-            end = 5,
-            fg = Color.Green,
-            bg = Color.Black,
-            intensity = Intensity.Bold
-        )
+        val original =
+            CategorisedSlice(
+                text = "hello",
+                start = 0,
+                end = 5,
+                fg = Color.Green,
+                bg = Color.Black,
+                intensity = Intensity.Bold,
+            )
 
         val cloned = original.cloneStyle("why", 10, 13)
 
@@ -455,18 +459,19 @@ class CansiTest {
 
     @Test
     fun categorisedSlicesLessThanOrEqualToMatchesPlusOne() {
-        val tests = listOf(
-            "hello",
-            "\u001b[32mhello\u001b[0m",
-            "prefix\u001b[32mmiddle\u001b[31mend\u001b[0mfinal"
-        )
+        val tests =
+            listOf(
+                "hello",
+                "\u001b[32mhello\u001b[0m",
+                "prefix\u001b[32mmiddle\u001b[31mend\u001b[0mfinal",
+            )
 
         for (text in tests) {
             val matches = parse(text)
             val slices = categoriseText(text)
             assertTrue(
                 slices.size <= matches.size + 1,
-                "Expected slices (${slices.size}) <= matches + 1 (${matches.size + 1}) for: $text"
+                "Expected slices (${slices.size}) <= matches + 1 (${matches.size + 1}) for: $text",
             )
         }
     }
