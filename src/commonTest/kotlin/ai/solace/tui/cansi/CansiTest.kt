@@ -1,3 +1,5 @@
+// port-lint: source src/tests.rs
+
 package ai.solace.tui.cansi
 
 import kotlin.test.Test
@@ -512,5 +514,58 @@ class CansiTest {
         assertEquals(null, result[1].underline)
         assertEquals(null, result[1].fg)
         assertEquals(null, result[1].bg)
+    }
+
+    // ========== Upstream Rust Parity Test Methods ==========
+
+    @Test
+    fun parseTest() = parseBasicAnsiSequences()
+
+    @Test
+    fun parseStringWithDifferentChars() = parseStringWithEmoji()
+
+    @Test
+    fun malformedEscape() = parseMalformedEscape()
+
+    @Test
+    fun catAndMatchesLen() = categorisedSlicesLessThanOrEqualToMatchesPlusOne()
+
+    @Test
+    fun malformedEscapes() = categoriseMalformedEscapes()
+
+    @Test
+    fun lineIterNewlineStartsWithEsc() = lineIterNewlineStartsWithEscape()
+
+    @Test
+    fun colouringWithEmojis() = categoriseWithEmoji()
+
+    @Test
+    fun coverOtherParameters() {
+        categoriseForegroundColors()
+        categoriseBackgroundColors()
+        categoriseBrightForegroundColors()
+        categoriseBrightBackgroundColors()
+    }
+
+    @Test
+    fun lineIterTest() {
+        lineIterSingleLine()
+        lineIterTwoLines()
+        lineIterMultipleNewlines()
+        lineIterCrLf()
+        lineIterMixedNewlines()
+    }
+
+    @Test
+    fun lineIterBugs() {
+        lineIterUsesUtf8ByteOffsets()
+        lineIterUsesUtf8ByteOffsetsWithCrLf()
+    }
+
+    @Test
+    fun splitOnNewLineTests() {
+        lineIterSingleLine()
+        lineIterTwoLines()
+        lineIterCrLf()
     }
 }

@@ -1,3 +1,5 @@
+// port-lint: source src/lib.rs
+
 /**
  * Cansi - Categorise ANSI - ANSI escape code parser and categoriser
  *
@@ -8,6 +10,16 @@
  * particularly SGR (Select Graphic Rendition) parameters.
  */
 package ai.solace.tui.cansi
+
+/**
+ * Type definition of the collection of [CategorisedSlice]s.
+ */
+typealias CategorisedSlices = List<CategorisedSlice>
+
+/**
+ * The item type representing a line of [CategorisedSlice]s.
+ */
+typealias CategorisedLine = List<CategorisedSlice>
 
 /**
  * The 16 standard ANSI colors (8 normal + 8 bright).
@@ -103,18 +115,56 @@ data class CategorisedSlice(
          */
         fun defaultStyle(text: String, start: Int, end: Int): CategorisedSlice =
             CategorisedSlice(text = text, start = start, end = end)
+
+        /**
+         * Constructs a [CategorisedSlice] with given SGR formatting.
+         */
+        fun withSgr(
+            fg: Color? = null,
+            bg: Color? = null,
+            intensity: Intensity? = null,
+            italic: Boolean? = null,
+            underline: Boolean? = null,
+            blink: Boolean? = null,
+            reversed: Boolean? = null,
+            hidden: Boolean? = null,
+            strikethrough: Boolean? = null,
+            text: String,
+            start: Int,
+            end: Int,
+        ): CategorisedSlice =
+            CategorisedSlice(
+                text = text,
+                start = start,
+                end = end,
+                fg = fg,
+                bg = bg,
+                intensity = intensity,
+                italic = italic,
+                underline = underline,
+                blink = blink,
+                reversed = reversed,
+                hidden = hidden,
+                strikethrough = strikethrough,
+            )
     }
 }
 
-// CSI bytes: ESC (0x1b) followed by '[' (0x5b)
-private val CSI_BYTES = byteArrayOf(0x1b, 0x5b)
+/**
+ * CSI byte sequence: ESC (0x1b) followed by '[' (0x5b).
+ */
+val CSI: ByteArray = byteArrayOf(0x1b, 0x5b)
+private val CSI_BYTES = CSI
 
 /**
  * Checks if a byte is a CSI sequence terminating character.
  * Terminating bytes are in the range 0x40-0x7E.
  */
-private fun isTerminatedByte(byte: Byte): Boolean =
+fun terminatedByte(byte: Byte): Boolean =
     byte in 0x40..0x7E
+
+private fun isTerminatedByte(byte: Byte): Boolean =
+    terminatedByte(byte)
 
 /**
  * Parses ANSI escape codes from the given text, returning a list of [Match].
@@ -196,6 +246,8 @@ private data class Sgr(
     var strikethrough: Boolean? = null,
 )
 
+private typealias SGR = Sgr
+
 private const val SEPARATOR = ';'
 
 /**
@@ -209,7 +261,7 @@ private fun handleSeq(m: Match): Sgr {
 
 /**
  * Applies the style sequence to the SGR. Maps decimal numbers according to
- * [ANSI escape code spec](https://en.wikipedia.org/wiki/ANSI_escape_code#Escape_sequences).
+ * the ECMA-48 SGR parameter specification.
  */
 private fun adjustSgr(sgr: Sgr, seq: String): Sgr {
     when (seq) {
@@ -335,6 +387,13 @@ fun categoriseText(text: String): List<CategorisedSlice> {
 
     return slices
 }
+
+/**
+ * Parses the text and returns each formatted slice in order using the v3 API.
+ * In Kotlin this is identical to [categoriseText].
+ */
+fun categoriseTextV3(text: String): List<CategorisedSlice> =
+    categoriseText(text)
 
 /**
  * Constructs a string of the categorized text without the ANSI escape characters.
