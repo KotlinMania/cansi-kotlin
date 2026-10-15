@@ -265,57 +265,105 @@ private fun handleSeq(m: Match): Sgr {
  */
 private fun adjustSgr(sgr: Sgr, seq: String): Sgr {
     when (seq) {
-        "0" -> return Sgr() // Reset
+        // Reset
+        "0" -> return Sgr()
+
         "1" -> sgr.intensity = Intensity.Bold
+
         "2" -> sgr.intensity = Intensity.Faint
+
         "3" -> sgr.italic = true
+
         "4" -> sgr.underline = true
+
         "5" -> sgr.blink = true
+
         "7" -> sgr.reversed = true
+
         "8" -> sgr.hidden = true
+
         "9" -> sgr.strikethrough = true
+
         "22" -> sgr.intensity = Intensity.Normal
+
         "23" -> sgr.italic = false
+
         "24" -> sgr.underline = false
+
         "25" -> sgr.blink = false
+
         "27" -> sgr.reversed = false
+
         "28" -> sgr.hidden = false
+
         "29" -> sgr.strikethrough = false
+
         // Foreground colors 30-37
         "30" -> sgr.fg = Color.Black
+
         "31" -> sgr.fg = Color.Red
+
         "32" -> sgr.fg = Color.Green
+
         "33" -> sgr.fg = Color.Yellow
+
         "34" -> sgr.fg = Color.Blue
+
         "35" -> sgr.fg = Color.Magenta
+
         "36" -> sgr.fg = Color.Cyan
+
         "37" -> sgr.fg = Color.White
+
         // Background colors 40-47
         "40" -> sgr.bg = Color.Black
+
         "41" -> sgr.bg = Color.Red
+
         "42" -> sgr.bg = Color.Green
+
         "43" -> sgr.bg = Color.Yellow
+
         "44" -> sgr.bg = Color.Blue
+
         "45" -> sgr.bg = Color.Magenta
+
         "46" -> sgr.bg = Color.Cyan
+
         "47" -> sgr.bg = Color.White
+
         // Bright foreground colors 90-97
         "90" -> sgr.fg = Color.BrightBlack
+
         "91" -> sgr.fg = Color.BrightRed
+
         "92" -> sgr.fg = Color.BrightGreen
+
         "93" -> sgr.fg = Color.BrightYellow
+
         "94" -> sgr.fg = Color.BrightBlue
+
         "95" -> sgr.fg = Color.BrightMagenta
+
         "96" -> sgr.fg = Color.BrightCyan
+
         "97" -> sgr.fg = Color.BrightWhite
+
         // Bright background colors 100-107
         "100" -> sgr.bg = Color.BrightBlack
+
         "101" -> sgr.bg = Color.BrightRed
+
         "102" -> sgr.bg = Color.BrightGreen
+
         "103" -> sgr.bg = Color.BrightYellow
+
         "104" -> sgr.bg = Color.BrightBlue
+
         "105" -> sgr.bg = Color.BrightMagenta
+
         "106" -> sgr.bg = Color.BrightCyan
+
         "107" -> sgr.bg = Color.BrightWhite
     }
     return sgr
