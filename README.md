@@ -4,7 +4,7 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.kotlinmania/cansi-kotlin?color=blue&logo=apachemaven)](https://central.sonatype.com/artifact/io.github.kotlinmania/cansi-kotlin)
 [![CI](https://img.shields.io/github/actions/workflow/status/KotlinMania/cansi-kotlin/ci.yml?branch=main&label=CI&logo=githubactions&logoColor=white)](https://github.com/KotlinMania/cansi-kotlin/actions)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Platform: KMP](https://img.shields.io/badge/Platform-Multiplatform-blue.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org/docs/multiplatform.html)
 [![Swift Export](https://img.shields.io/badge/Swift_Export-Ready-F05138.svg?logo=swift&logoColor=white)](https://github.com/KotlinMania/cansi-kotlin)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
