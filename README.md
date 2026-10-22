@@ -53,7 +53,7 @@ Add `cansi-kotlin` to your `commonMain` dependencies:
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.kotlinmania:cansi-kotlin:0.1.6")
+            implementation("io.github.kotlinmania:cansi-kotlin:0.1.7")
         }
     }
 }
@@ -65,7 +65,7 @@ kotlin {
 <dependency>
     <groupId>io.github.kotlinmania</groupId>
     <artifactId>cansi-kotlin</artifactId>
-    <version>0.1.6</version>
+    <version>0.1.7</version>
 </dependency>
 ```
 
