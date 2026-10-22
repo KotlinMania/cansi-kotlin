@@ -1,14 +1,3 @@
-// port-lint: source src/lib.rs
-
-/**
- * Cansi - Categorise ANSI - ANSI escape code parser and categoriser
- *
- * Kotlin Multiplatform port of the Rust cansi crate.
- *
- * This library parses text with ANSI escape sequences and returns deconstructed
- * text with metadata around coloring and styling. It focuses on CSI sequences,
- * particularly SGR (Select Graphic Rendition) parameters.
- */
 package ai.solace.tui.cansi
 
 /**
@@ -56,19 +45,6 @@ enum class Intensity {
     /** Faint. */
     Faint,
 }
-
-/**
- * A match representing an ANSI escape sequence found in text.
- *
- * @property start First byte index (inclusive).
- * @property end Last byte index + 1 (exclusive).
- * @property text The matched escape sequence text.
- */
-data class Match(
-    val start: Int,
-    val end: Int,
-    val text: String,
-)
 
 /**
  * Data structure that holds information about coloring and styling of a text slice.
@@ -151,90 +127,9 @@ data class CategorisedSlice(
 }
 
 /**
- * CSI byte sequence: ESC (0x1b) followed by '[' (0x5b).
- */
-val CSI: ByteArray = byteArrayOf(0x1b, 0x5b)
-private val CSI_BYTES = CSI
-
-/**
- * Checks if a byte is a CSI sequence terminating character.
- * Terminating bytes are in the range 0x40-0x7E.
- */
-fun terminatedByte(byte: Byte): Boolean =
-    byte in 0x40..0x7E
-
-private fun isTerminatedByte(byte: Byte): Boolean =
-    terminatedByte(byte)
-
-/**
- * Parses ANSI escape codes from the given text, returning a list of [Match].
- *
- * Only CSI (Control Sequence Introducer) sequences are detected.
- * The escape codes themselves are returned, not the styled text.
- * Positions are byte indices into the UTF-8 encoded string.
- *
- * Example:
- * ```kotlin
- * val ansiText = "Hello, \u001b[31;4mworld\u001b[0m!"
- * val parsed = parse(ansiText).map { it.start to it.end }
- * // parsed = [(7, 14), (19, 23)]
- * ```
- *
- * @param text The text to parse for ANSI escape codes.
- * @return A list of matches representing escape sequences found.
- */
-fun parse(text: String): List<Match> {
-    val matches = mutableListOf<Match>()
-    val bytes = text.encodeToByteArray()
-    val csiLen = CSI_BYTES.size
-
-    var start = 0
-    var end = start + csiLen
-
-    while (end <= bytes.size) {
-        // Check if we have CSI at this position
-        if (bytes[start] == CSI_BYTES[0] && bytes[start + 1] == CSI_BYTES[1]) {
-            // Start of a CSI sequence - find the terminating byte
-            while (end < bytes.size && !isTerminatedByte(bytes[end])) {
-                end++
-            }
-
-            val finalEnd = end + 1
-
-            if (finalEnd > bytes.size) {
-                break
-            }
-
-            matches.add(
-                Match(
-                    start = start,
-                    end = finalEnd,
-                    text = bytes.sliceArray(start until finalEnd).decodeToString(),
-                ),
-            )
-
-            start = finalEnd
-        } else {
-            // Move past current UTF-8 character
-            // UTF-8 encoding: bytes starting with 0xxxxxxx or 11xxxxxx are start bytes
-            // Continuation bytes start with 10xxxxxx
-            start++
-            // Skip continuation bytes (10xxxxxx pattern)
-            while (start < bytes.size && (bytes[start].toInt() and 0xC0) == 0x80) {
-                start++
-            }
-        }
-
-        end = start + csiLen
-    }
-
-    return matches
-}
-
-/**
  * Internal representation of SGR (Select Graphic Rendition) parameters.
  */
-private data class Sgr(
+internal data class Sgr(
     var fg: Color? = null,
     var bg: Color? = null,
     var intensity: Intensity? = null,
@@ -245,203 +140,6 @@ private data class Sgr(
     var hidden: Boolean? = null,
     var strikethrough: Boolean? = null,
 )
-
-private typealias SGR = Sgr
-
-private const val SEPARATOR = ';'
-
-/**
- * Produces an [Sgr] from a styling sequence match.
- */
-private fun handleSeq(m: Match): Sgr {
-    // The slice we want to process skips first two bytes (ESC[) and last byte (terminating byte)
-    val slice = m.text.substring(2, m.text.length - 1)
-    return slice.split(SEPARATOR).fold(Sgr()) { sgr, seq -> adjustSgr(sgr, seq) }
-}
-
-/**
- * Applies the style sequence to the SGR. Maps decimal numbers according to
- * the ECMA-48 SGR parameter specification.
- */
-private fun adjustSgr(sgr: Sgr, seq: String): Sgr {
-    when (seq) {
-        // Reset
-        "0" -> return Sgr()
-
-        "1" -> sgr.intensity = Intensity.Bold
-
-        "2" -> sgr.intensity = Intensity.Faint
-
-        "3" -> sgr.italic = true
-
-        "4" -> sgr.underline = true
-
-        "5" -> sgr.blink = true
-
-        "7" -> sgr.reversed = true
-
-        "8" -> sgr.hidden = true
-
-        "9" -> sgr.strikethrough = true
-
-        "22" -> sgr.intensity = Intensity.Normal
-
-        "23" -> sgr.italic = false
-
-        "24" -> sgr.underline = false
-
-        "25" -> sgr.blink = false
-
-        "27" -> sgr.reversed = false
-
-        "28" -> sgr.hidden = false
-
-        "29" -> sgr.strikethrough = false
-
-        // Foreground colors 30-37
-        "30" -> sgr.fg = Color.Black
-
-        "31" -> sgr.fg = Color.Red
-
-        "32" -> sgr.fg = Color.Green
-
-        "33" -> sgr.fg = Color.Yellow
-
-        "34" -> sgr.fg = Color.Blue
-
-        "35" -> sgr.fg = Color.Magenta
-
-        "36" -> sgr.fg = Color.Cyan
-
-        "37" -> sgr.fg = Color.White
-
-        // Background colors 40-47
-        "40" -> sgr.bg = Color.Black
-
-        "41" -> sgr.bg = Color.Red
-
-        "42" -> sgr.bg = Color.Green
-
-        "43" -> sgr.bg = Color.Yellow
-
-        "44" -> sgr.bg = Color.Blue
-
-        "45" -> sgr.bg = Color.Magenta
-
-        "46" -> sgr.bg = Color.Cyan
-
-        "47" -> sgr.bg = Color.White
-
-        // Bright foreground colors 90-97
-        "90" -> sgr.fg = Color.BrightBlack
-
-        "91" -> sgr.fg = Color.BrightRed
-
-        "92" -> sgr.fg = Color.BrightGreen
-
-        "93" -> sgr.fg = Color.BrightYellow
-
-        "94" -> sgr.fg = Color.BrightBlue
-
-        "95" -> sgr.fg = Color.BrightMagenta
-
-        "96" -> sgr.fg = Color.BrightCyan
-
-        "97" -> sgr.fg = Color.BrightWhite
-
-        // Bright background colors 100-107
-        "100" -> sgr.bg = Color.BrightBlack
-
-        "101" -> sgr.bg = Color.BrightRed
-
-        "102" -> sgr.bg = Color.BrightGreen
-
-        "103" -> sgr.bg = Color.BrightYellow
-
-        "104" -> sgr.bg = Color.BrightBlue
-
-        "105" -> sgr.bg = Color.BrightMagenta
-
-        "106" -> sgr.bg = Color.BrightCyan
-
-        "107" -> sgr.bg = Color.BrightWhite
-    }
-    return sgr
-}
-
-/**
- * Converts an [Sgr] to a [CategorisedSlice].
- */
-private fun Sgr.toSlice(text: String, start: Int, end: Int): CategorisedSlice =
-    CategorisedSlice(
-        text = text,
-        start = start,
-        end = end,
-        fg = fg,
-        bg = bg,
-        intensity = intensity,
-        italic = italic,
-        underline = underline,
-        blink = blink,
-        reversed = reversed,
-        hidden = hidden,
-        strikethrough = strikethrough,
-    )
-
-/**
- * Parses the text and returns each formatted slice in order.
- * The ANSI escape codes are not included in the text slices.
- *
- * Each different text slice is returned in order such that the text without
- * the escape characters can be reconstructed. There is a helper function
- * [constructTextNoCodes] for this.
- *
- * Example:
- * ```kotlin
- * val text = "\u001b[31mHello\u001b[0m, World!"
- * val slices = categoriseText(text)
- * // slices[0] = CategorisedSlice(text="Hello", fg=Color.Red, ...)
- * // slices[1] = CategorisedSlice(text=", World!", fg=null, ...)
- * ```
- *
- * @param text The text containing ANSI escape sequences to parse.
- * @return A list of categorized slices with styling information.
- */
-fun categoriseText(text: String): List<CategorisedSlice> {
-    val matches = parse(text)
-    val bytes = text.encodeToByteArray()
-
-    var sgr = Sgr()
-    var lo = 0
-
-    // Will always be less than or equal to matches.size + 1 in length
-    val slices = mutableListOf<CategorisedSlice>()
-
-    for (m in matches) {
-        // Add in the text before CSI with the previous SGR format
-        if (m.start != lo) {
-            val sliceText = bytes.sliceArray(lo until m.start).decodeToString()
-            slices.add(sgr.toSlice(sliceText, lo, m.start))
-        }
-
-        sgr = handleSeq(m)
-        lo = m.end
-    }
-
-    if (lo != bytes.size) {
-        val sliceText = bytes.sliceArray(lo until bytes.size).decodeToString()
-        slices.add(sgr.toSlice(sliceText, lo, bytes.size))
-    }
-
-    return slices
-}
-
-/**
- * Parses the text and returns each formatted slice in order using the v3 API.
- * In Kotlin this is identical to [categoriseText].
- */
-fun categoriseTextV3(text: String): List<CategorisedSlice> =
-    categoriseText(text)
 
 /**
  * Constructs a string of the categorized text without the ANSI escape characters.
@@ -463,7 +161,7 @@ fun constructTextNoCodes(slices: List<CategorisedSlice>): String =
         }
     }
 
-private data class NewLineSplit(
+internal data class NewLineSplit(
     val firstText: String,
     val firstByteLength: Int,
     val remainderText: String?,
@@ -474,7 +172,7 @@ private data class NewLineSplit(
  * Splits on the first instance of `\r\n` or `\n`.
  * The returned offsets are UTF-8 byte counts within [txt].
  */
-private fun splitOnNewLine(txt: String): NewLineSplit {
+internal fun splitOnNewLine(txt: String): NewLineSplit {
     val nl = txt.indexOf('\n')
 
     if (nl == -1) {
