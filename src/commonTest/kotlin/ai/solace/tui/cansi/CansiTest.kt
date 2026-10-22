@@ -562,10 +562,50 @@ class CansiTest {
         lineIterUsesUtf8ByteOffsetsWithCrLf()
     }
 
+    private fun fnAsStr(s: String): Pair<String, String?> {
+        val split = splitOnNewLine(s)
+        return split.firstText to split.remainderText
+    }
+
     @Test
     fun splitOnNewLineTests() {
-        lineIterSingleLine()
-        lineIterTwoLines()
-        lineIterCrLf()
+        // no remainder
+        val (first1, remainder1) = fnAsStr("Hello worlds")
+        assertEquals("Hello worlds", first1)
+        assertEquals(null, remainder1)
+
+        val (first2, remainder2) = fnAsStr("Hello worlds\n")
+        assertEquals("Hello worlds", first2)
+        assertEquals("", remainder2)
+
+        val (first3, remainder3) = fnAsStr("Hello worlds\r\n")
+        assertEquals("Hello worlds", first3)
+        assertEquals("", remainder3)
+
+        // some remainder
+        val (first4, remainder4) = fnAsStr("Hello worlds\none two three")
+        assertEquals("Hello worlds", first4)
+        assertEquals("one two three", remainder4)
+
+        val (first5, remainder5) = fnAsStr("Hello worlds\r\none two three")
+        assertEquals("Hello worlds", first5)
+        assertEquals("one two three", remainder5)
+
+        val (first6, remainder6) = fnAsStr("Hello worlds\r\none\ntwo\nthree\n")
+        assertEquals("Hello worlds", first6)
+        assertEquals("one\ntwo\nthree\n", remainder6)
+
+        // no first
+        val (first7, remainder7) = fnAsStr("\r\nHello worlds\none two three")
+        assertEquals("", first7)
+        assertEquals("Hello worlds\none two three", remainder7)
+
+        val (first8, remainder8) = fnAsStr("\nHello worlds\r\none two three")
+        assertEquals("", first8)
+        assertEquals("Hello worlds\r\none two three", remainder8)
+
+        val (first9, remainder9) = fnAsStr("\r\n")
+        assertEquals("", first9)
+        assertEquals("", remainder9)
     }
 }
